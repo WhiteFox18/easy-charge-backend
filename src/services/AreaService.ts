@@ -1,8 +1,7 @@
-import { DatabaseClient, ServiceProps } from "../types";
-import DummyModel from "./models/DummyModel";
 import { ExtendedDatabase } from "../db";
+import { DatabaseClient, ServiceProps } from "../types";
 
-export default class DummyService {
+export default class AreaService {
   private db: ExtendedDatabase = null;
   private pgp: DatabaseClient = null;
 
@@ -11,7 +10,11 @@ export default class DummyService {
     this.pgp = props.pgp;
   }
 
-  dummyFunc = async () => {
-    await DummyModel.dummyFunc();
-  };
+  // TODO: get list countries
+
+  // TODO: get list states
+
+  // TODO: get list cities
+
+  // TODO: get list districts
 }

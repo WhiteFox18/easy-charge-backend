@@ -9,11 +9,14 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
     "express": "^4.17.2",
+    "express-session": "^1.17.3",
+    "express-validator": "^6.14.1",
     "http": "^0.0.1-security",
     "morgan": "^1.10.0",
     "pg": "^8.7.3",
     "pg-promise": "^10.11.1",
-    "postgres-migrations": "^5.3.0"
+    "postgres-migrations": "^5.3.0",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.36",
@@ -21,6 +24,7 @@
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
     "@types/morgan": "^1.9.3",
-    "@types/pg": "^8.6.4"
+    "@types/pg": "^8.6.4",
+    "@types/uuid": "^8.3.4"
   }
 }

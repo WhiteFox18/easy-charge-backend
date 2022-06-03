@@ -1,11 +1,12 @@
 import { Router } from "express";
-import DummyController from "../../controllers/DummyController";
-import { dummyMiddleware } from "../../modules/middlewares";
+import admin_crm from "./admin_crm";
+import company_crm from "./company_crm";
+import mobile from "./mobile";
 
 const router = Router();
 
-router.use(dummyMiddleware);
-
-router.get("/dummy", DummyController.dummyFunc);
+router.use("/admin_crm", admin_crm)
+router.use("/company_crm", company_crm)
+router.use("/mobile", mobile)
 
 export default router;

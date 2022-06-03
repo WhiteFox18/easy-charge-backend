@@ -8,3 +8,5 @@ export interface ServiceProps {
   db: ExtendedDatabase;
   pgp: DatabaseClient;
 }
+
+export type Lang = "ru" | "en" | "uz"
