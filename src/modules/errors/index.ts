@@ -5,7 +5,7 @@ const Errors = {
     throw new CustomError({
       statusCode: 401,
       message: "login",
-      description: "email or password incorrect",
+      description: "username or password incorrect",
       fields: []
     })
   },
@@ -47,6 +47,14 @@ const Errors = {
       message: "fuelTypeHasParent",
       description: "given parent id already has parent",
       fields: ["parent_id"]
+    })
+  },
+  notAllowed: () => {
+    throw new CustomError({
+      statusCode: 406,
+      message: "notAllowed",
+      description: "you do not have enough permissions",
+      fields: []
     })
   }
 }

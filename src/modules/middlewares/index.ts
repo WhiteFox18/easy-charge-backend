@@ -1,19 +1,22 @@
-import {Request, Response, NextFunction} from "express";
-import {validationResult} from "express-validator";
-import {getOffset} from "../helpers";
+import { Request, Response, NextFunction } from "express";
+import { validationResult } from "express-validator";
+import { getOffset } from "../helpers";
 import cors from "cors";
 import config from "../../config";
+import Errors from "../errors";
+import jwt from "jsonwebtoken";
+import { JwtTokenUserType } from "../../types";
 
-const allowedOrigins = ["localhost:3000"]
+const allowedOrigins = ["http://localhost:3000"];
 
 export const validate = (validations: any) => {
   return async (req: Request, res: Response, next: NextFunction) => {
-    console.log("params")
-    console.log(req.params)
-    console.log("query")
-    console.log(req.query)
-    console.log("body")
-    console.log(req.body)
+    console.log("params");
+    console.log(req.params);
+    console.log("query");
+    console.log(req.query);
+    console.log("body");
+    console.log(req.body);
 
     await Promise.all(validations.map((validation: any) => validation.run(req)));
 
@@ -34,8 +37,8 @@ export const validate = (validations: any) => {
       error: {
         type: "validation",
         description: "validation",
-        fields: errorsArray
-      }
+        fields: errorsArray,
+      },
     });
   };
 };
@@ -44,7 +47,7 @@ export const cors_before = cors({
   origin(origin, callback) {
     // allow requests with no origin
     // (like mobile apps or curl requests)
-    if (!origin && config.production === false) return callback(null, true)
+    if (!origin && config.production === false) return callback(null, true);
 
     if (allowedOrigins.indexOf(origin) === -1) {
       return callback(new Error("cors"), false);
@@ -53,11 +56,12 @@ export const cors_before = cors({
     return callback(null, true);
   },
   credentials: true,
-})
+});
 
 
 export const cors_after = (req: Request, res: Response, next: NextFunction) => {
   const origin = req.headers.origin;
+
   if (allowedOrigins.indexOf(origin) > -1) {
     // Website you wish to allow connecting
     res.setHeader("Access-Control-Allow-Origin", origin);
@@ -76,9 +80,84 @@ export const cors_after = (req: Request, res: Response, next: NextFunction) => {
   res.setHeader("Cache-Control", "no-store, no-cache");
 
   next();
+};
+
+const verifyAndGetTokenInfo = (authorizationHeader: string, type: JwtTokenUserType) => {
+  try {
+    if (!authorizationHeader || !authorizationHeader.includes("Bearer"))
+      Errors.notAuthenticated();
+
+    const token = authorizationHeader.split(" ")[1];
+
+    try {
+      if (type === "admin")
+        return jwt.verify(token, config.jwt_secret.admin);
+      else if (type === "company_user")
+        return jwt.verify(token, config.jwt_secret.company_user);
+    } catch (e) {
+      Errors.notAuthenticated();
+    }
+
+    Errors.notAuthenticated();
+  } catch (e) {
+    throw e;
+  }
+};
+
+export const adminProtected = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user_info: any = await verifyAndGetTokenInfo(req.headers.authorization, "admin");
+    
+    res.locals = {
+      user_id: user_info.id,
+      is_super: user_info.is_super
+    };
+
+    next();
+  } catch (e) {
+    next(e);
+  }
+};
+
+export const superAdminProtected = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if(!res.locals.is_user)
+      Errors.notAllowed()
+
+    next()
+  } catch (e) {
+    next(e)
+  }
 }
 
-export const create_offset_field_in_query = (req: Request, res: Response, next: NextFunction) => {
+export const gigaChadAdminProtected = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if(!res.locals.is_user || res.locals.id !== 1)
+      Errors.notAllowed()
+
+    next()
+  } catch (e) {
+    next(e)
+  }
+}
+
+export const companyUserProtected = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user_info: any = await verifyAndGetTokenInfo(req.headers.authorization, "company_user");
+
+    res.locals = {
+      user_id: user_info.id,
+      is_super: user_info.is_super,
+      working_branches: user_info.working_branches
+    };
+
+    next();
+  } catch (e) {
+    next(e);
+  }
+};
+
+export const createOffsetFieldInQuery = (req: Request, res: Response, next: NextFunction) => {
   if (req.method === "GET") {
     if (req.query.limit && req.query.page) {
       let offset = getOffset({

@@ -8,6 +8,12 @@ import path from "path";
 import config from "../config";
 import FuelTypesModel from "../services/models/FuelTypesModel";
 import FuelTypesService from "../services/FuelTypesService";
+import CompanyUserModel from "../services/models/CompanyUserModel";
+import CompanyUserService from "../services/CompanyUserService";
+import CompanyModel from "../services/models/CompanyModel";
+import CompanyService from "../services/CompanyService";
+import CompanyBranchService from "../services/CompanyBranchService";
+import CompanyBranchModel from "../services/models/CompanyBranchModel";
 
 dotenv.config();
 
@@ -19,6 +25,18 @@ interface IExtensions {
   fuelTypes: {
     query: typeof FuelTypesModel,
     service: FuelTypesService
+  };
+  companyUser: {
+    query: typeof CompanyUserModel,
+    service: CompanyUserService
+  };
+  company: {
+    query: typeof CompanyModel,
+    service: CompanyService
+  };
+  companyBranch: {
+    query: typeof CompanyBranchModel,
+    service: CompanyBranchService
   };
 }
 
@@ -45,6 +63,21 @@ const initOptions: any = {
     db.fuelTypes = {
       query: FuelTypesModel,
       service: new FuelTypesService({ db, pgp }),
+    };
+
+    db.companyUser = {
+      query: CompanyUserModel,
+      service: new CompanyUserService({ db, pgp }),
+    };
+
+    db.company = {
+      query: CompanyModel,
+      service: new CompanyService({ db, pgp }),
+    };
+
+    db.companyBranch = {
+      query: CompanyBranchModel,
+      service: new CompanyBranchService({ db, pgp }),
     };
   },
 };

@@ -10,3 +10,5 @@ export interface ServiceProps {
 }
 
 export type Lang = "ru" | "en" | "uz"
+
+export type JwtTokenUserType = "admin" | "company_user"
