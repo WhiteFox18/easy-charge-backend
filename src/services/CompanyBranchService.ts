@@ -1,6 +1,6 @@
 import { DatabaseClient, ServiceProps } from "../types";
 import { ExtendedDatabase } from "../db";
-import { GetOne, ListCompanyBranches } from "./types";
+import { GetOne, ListCompanyBranches, ListCompanyBranchesForMobile } from "./types";
 import { checkQueryResultNoData, paginate } from "../modules/helpers";
 
 export default class CompanyBranchService {
@@ -19,6 +19,18 @@ export default class CompanyBranchService {
       return paginate(
         await this.db.manyOrNone(
           await this.db.companyBranch.query.list(data)
+        )
+      )
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  listMobile = async (data: ListCompanyBranchesForMobile) => {
+    try {
+      return paginate(
+        await this.db.manyOrNone(
+          await this.db.companyBranch.query.listMobile(data)
         )
       )
     } catch (e) {

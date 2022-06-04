@@ -29,6 +29,16 @@ export interface ListCompanyBranches {
   lang: Lang;
 }
 
+export interface ListCompanyBranchesForMobile {
+  longitude: number;
+  latitude: number;
+  search: string;
+  fuel_types: number[];
+  lang: Lang;
+  limit: number;
+  offset: number
+}
+
 export interface Admin {
   id: number;
   name: string;

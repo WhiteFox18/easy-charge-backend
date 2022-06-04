@@ -6,6 +6,7 @@ import { createImagesFolder, errorHandling } from "./modules/helpers";
 import { cors_after, cors_before, createOffsetFieldInQuery } from "./modules/middlewares";
 import config from "./config";
 import cors from "cors";
+import { queryParser } from "express-query-parser";
 
 createImagesFolder();
 
@@ -15,6 +16,14 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(
+  queryParser({
+    parseNull: true,
+    parseUndefined: true,
+    parseBoolean: true,
+    parseNumber: true,
+  }),
+);
 
 // CORS
 app.use(cors_before);

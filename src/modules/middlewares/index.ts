@@ -160,12 +160,10 @@ export const companyUserProtected = async (req: Request, res: Response, next: Ne
 export const createOffsetFieldInQuery = (req: Request, res: Response, next: NextFunction) => {
   if (req.method === "GET") {
     if (req.query.limit && req.query.page) {
-      let offset = getOffset({
+      req.query.offset = getOffset({
         limit: Number.parseInt(req.query.limit as string),
         page: Number.parseInt(req.query.page as string)
-      })
-
-      req.query.offset = offset.toString()
+      }) as any
     }
   }
 

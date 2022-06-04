@@ -27,14 +27,14 @@ const FuelTypesModel = {
   },
   getOne: async (fuel_type_id: number) => {
     return pgp.as.format(`
-      SELECT *
+      SELECT id, parent_id, name_uz, name_ru, name_en
       FROM fuel_types
       WHERE id = $1
     `, [fuel_type_id])
   },
   parentIdIsNull: async (fuel_type_id: number) => {
     return pgp.as.format(`
-      SELECT CASE WHEN parent_id IS NULL THEN true ELSE false END as has_parent
+      SELECT CASE WHEN parent_id IS NULL THEN false ELSE true END as has_parent
       FROM fuel_types
       WHERE id = $1
     `, [fuel_type_id])
@@ -43,7 +43,7 @@ const FuelTypesModel = {
     return pgp.as.format(`
       INSERT INTO fuel_types(parent_id, name_uz, name_ru, name_en)
       VALUES($1, $2, $3, $4)
-      RETURNING *
+      RETURNING id, parent_id, name_uz, name_ru, name_en
     `, [data.parent_id, data.name_uz, data.name_ru, data.name_en]);
   },
   updateOne: async (data: FuelType) => {
@@ -53,14 +53,14 @@ const FuelTypesModel = {
           name_ru = $2,
           name_en = $3
       WHERE id = $4
-      RETURNING *
+      RETURNING id, parent_id, name_uz, name_ru, name_en
     `, [data.name_uz, data.name_ru, data.name_en, data.id]);
   },
   deleteOne: async (fuel_type_id: number) => {
     return pgp.as.format(`
       DELETE FROM fuel_types
       WHERE id = $1
-      RETURNING *
+      RETURNING id
     `, [fuel_type_id]);
   },
 };

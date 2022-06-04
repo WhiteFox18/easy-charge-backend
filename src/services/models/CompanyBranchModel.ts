@@ -1,10 +1,10 @@
-import { GetOne, ListCompanyBranches } from "../types";
+import { GetOne, ListCompanyBranches, ListCompanyBranchesForMobile } from "../types";
 import { pgp } from "../../db";
 import { Lang } from "../../types";
 
 const CompanyBranchModel = {
   list: async (data: ListCompanyBranches) => {
-    const lang: Lang = data.lang
+    const lang: Lang = data.lang;
 
     return pgp.as.format(`
       SELECT count(*) OVER ()::int as count,
@@ -30,10 +30,48 @@ const CompanyBranchModel = {
       WHERE company_id = $1::int
       ORDER BY CASE WHEN $2::varchar IS NOT NULL THEN similarity(cb.full_name, $2::varchar) END DESC
       LIMIT $3::int OFFSET $4::int
-    `, [data.company_id, data.search, data.limit, data.offset])
+    `, [data.company_id, data.search, data.limit, data.offset]);
+  },
+  listMobile: async (data: ListCompanyBranchesForMobile) => {
+    const lang: Lang = data.lang;
+
+    return pgp.as.format(`
+      SELECT count(*) OVER()::int as count,
+             cb.id,
+             cb.name_${lang} as name,
+             json_build_object(
+                     'longitude', cb.coords[0],
+                     'latitude', cb.coords[1]
+                 )           as coords
+      FROM company_branch cb
+               LEFT JOIN districts d on cb.district_id = d.id
+               LEFT JOIN cities c on d.city_id = c.id
+               LEFT JOIN states s on c.state_id = s.id
+               LEFT JOIN countries c2 on s.country_id = c2.id
+      WHERE CASE
+                WHEN array_length($1::int[], 1) IS NOT NULL THEN
+                    array_length(array_diff($1::int[], (SELECT array_agg(fuel_type_id)
+                                                        FROM company_branch_fuel_selection
+                                                        WHERE company_branch_id = cb.id
+                                                          AND is_available = true
+                                                        GROUP BY company_branch_id)), 1) IS NULL
+                ELSE cb.id = cb.id END
+      ORDER BY CASE WHEN $2::varchar IS NOT NULL THEN similarity(cb.full_name, $2::varchar) END DESC,
+               CASE
+                   WHEN $3::decimal IS NOT NULL AND $4::decimal IS NOT NULL THEN
+                       st_distance(
+                               st_setsrid(st_makepoint($3::decimal, $4::decimal), 4326),
+                               st_setsrid(cb.coords::geometry, 4326),
+                               true
+                           ) END ASC
+      LIMIT $5::int OFFSET $6::int
+    `, [
+      data.fuel_types, data.search, data.longitude,
+      data.latitude, data.limit, data.offset,
+    ]);
   },
   getOneForMobile: async (data: GetOne) => {
-    const lang: Lang = data.lang
+    const lang: Lang = data.lang;
 
     return pgp.as.format(`
       SELECT cb.id,
@@ -45,6 +83,7 @@ const CompanyBranchModel = {
                      c2.name_${lang}
                  )                               as address,
              cb.name_${lang}                     as name,
+             c3.name                             as company_name,
              json_build_object(
                      'longitude', cb.coords[0],
                      'latitude', cb.coords[1]
@@ -72,7 +111,7 @@ const CompanyBranchModel = {
                                ) as childs
                     FROM fuel_types ft_parent
                              LEFT JOIN fuel_types ft_child ON ft_parent.id = ft_child.parent_id
-                             LEFT JOIN company_branch_fuel_selection cbfs on ft_child.id = cbfs.fuel_type_id
+                             LEFT JOIN company_branch_fuel_selection cbfs on ft_child.id = cbfs.fuel_type_id AND cbfs.company_branch_id = cb.id
                     WHERE ft_parent.parent_id IS NULL
                       AND ft_child.id = ANY (SELECT fuel_type_id
                                              FROM company_branch_fuel_selection
@@ -83,11 +122,12 @@ const CompanyBranchModel = {
                LEFT JOIN cities c on d.city_id = c.id
                LEFT JOIN states s on c.state_id = s.id
                LEFT JOIN countries c2 on s.country_id = c2.id
+               LEFT JOIN companies c3 on c3.id = cb.company_id
       WHERE cb.id = $1::int
-    `, [data.id])
+    `, [data.id]);
   },
   getOneForCompany: async (data: GetOne) => {
-    const lang: Lang = data.lang
+    const lang: Lang = data.lang;
 
     return pgp.as.format(`
       SELECT cb.id,
@@ -128,7 +168,7 @@ const CompanyBranchModel = {
                                ) as childs
                     FROM fuel_types ft_parent
                              LEFT JOIN fuel_types ft_child ON ft_parent.id = ft_child.parent_id
-                             LEFT JOIN company_branch_fuel_selection cbfs on ft_child.id = cbfs.fuel_type_id
+                             LEFT JOIN company_branch_fuel_selection cbfs on ft_child.id = cbfs.fuel_type_id AND cbfs.company_branch_id = cb.id
                     WHERE ft_parent.parent_id IS NULL
                       AND ft_child.id = ANY (SELECT fuel_type_id
                                              FROM company_branch_fuel_selection
@@ -140,8 +180,8 @@ const CompanyBranchModel = {
                LEFT JOIN states s on c.state_id = s.id
                LEFT JOIN countries c2 on s.country_id = c2.id
       WHERE cb.id = $1::int
-    `, [data.id])
-  }
-}
+    `, [data.id]);
+  },
+};
 
-export default CompanyBranchModel
+export default CompanyBranchModel;
