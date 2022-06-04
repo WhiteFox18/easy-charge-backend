@@ -7,16 +7,18 @@ create table if not exists admins
     name       varchar(50)              not null,
     surname    varchar(50)              not null,
     patronymic varchar(50)              not null,
+    full_name  text,
     is_super   boolean                  not null,
     created_at timestamp with time zone not null default current_timestamp
 );
 
 create table if not exists countries
 (
-    id      int primary key generated always as identity,
-    name_uz varchar(50) not null,
-    name_ru varchar(50) not null,
-    name_en varchar(50) not null
+    id        int primary key generated always as identity,
+    name_uz   varchar(50) not null,
+    name_ru   varchar(50) not null,
+    name_en   varchar(50) not null,
+    full_name text
 );
 
 create table if not exists states
@@ -25,25 +27,28 @@ create table if not exists states
     country_id int         not null references countries (id),
     name_uz    varchar(50) not null,
     name_ru    varchar(50) not null,
-    name_en    varchar(50) not null
+    name_en    varchar(50) not null,
+    full_name  text
 );
 
 create table if not exists cities
 (
-    id       int primary key generated always as identity,
-    state_id int         not null references states (id),
-    name_uz  varchar(50) not null,
-    name_ru  varchar(50) not null,
-    name_en  varchar(50) not null
+    id        int primary key generated always as identity,
+    state_id  int         not null references states (id),
+    name_uz   varchar(50) not null,
+    name_ru   varchar(50) not null,
+    name_en   varchar(50) not null,
+    full_name text
 );
 
 create table if not exists districts
 (
-    id      int primary key generated always as identity,
-    city_id int         not null references cities (id),
-    name_uz varchar(50) not null,
-    name_ru varchar(50) not null,
-    name_en varchar(50) not null
+    id        int primary key generated always as identity,
+    city_id   int         not null references cities (id),
+    name_uz   varchar(50) not null,
+    name_ru   varchar(50) not null,
+    name_en   varchar(50) not null,
+    full_name text
 );
 
 create table if not exists fuel_types
@@ -52,7 +57,8 @@ create table if not exists fuel_types
     parent_id int references fuel_types (id),
     name_uz   varchar(50) not null,
     name_ru   varchar(50) not null,
-    name_en   varchar(50) not null
+    name_en   varchar(50) not null,
+    full_name text
 );
 
 create table if not exists companies
@@ -68,7 +74,10 @@ create table if not exists company_branch
     id          bigint primary key generated always as identity,
     company_id  int                      not null references companies (id),
     district_id int                      not null references districts (id),
-    name        varchar(50)              not null,
+    name_uz     varchar(50)              not null,
+    name_ru     varchar(50)              not null,
+    name_en     varchar(50)              not null,
+    full_name   varchar(50),
     coords      point                    not null,
     mon_from    time                     not null,
     mon_to      time                     not null,
@@ -105,8 +114,9 @@ create table if not exists company_user
     name         varchar(50)              not null,
     surname      varchar(50)              not null,
     patronymic   varchar(50)              not null,
-    passport     varchar(50)              not null,
-    phone_number varchar(50)              not null,
+    full_name    text,
+    passport     char(9)                  not null,
+    phone_number char(12)                 not null,
     image        varchar(50),
     password     varchar(50)              not null,
     is_super     boolean                  not null default true,
