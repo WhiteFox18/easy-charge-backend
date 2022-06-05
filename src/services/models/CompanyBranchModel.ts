@@ -1,4 +1,10 @@
-import { GetOne, ListCompanyBranches, ListCompanyBranchesForMobile } from "../types";
+import {
+  CreateOneCompanyBranch,
+  GetOne,
+  ListCompanyBranches,
+  ListCompanyBranchesForMobile,
+  UpdateOneCompanyBranch,
+} from "../types";
 import { pgp } from "../../db";
 import { Lang } from "../../types";
 
@@ -182,6 +188,88 @@ const CompanyBranchModel = {
       WHERE cb.id = $1::int
     `, [data.id]);
   },
+  createOne: async (data: CreateOneCompanyBranch & { company_id: number }) => {
+    return pgp.as.format(`
+      INSERT INTO company_branch(
+          district_id, coords, name_uz, name_ru, name_en,
+          mon_from, mon_to,
+          tue_from, tue_to,
+          wed_from, wed_to,
+          thu_from, thu_to,
+          fri_from, fri_to,
+          sat_from, sat_to,
+          sun_from, sun_to,
+          company_id
+      )
+      VALUES(
+          $1, $2, $3, $4, $5,
+          $6, $7,
+          $8, $9,
+          $10, $11,
+          $12, $13,
+          $14, $15,
+          $16, $17,
+          $18, $19,
+          $20
+      )
+      RETURNING *
+    `, [
+      data.district_id, data.coords,
+      data.name_uz, data.name_ru, data.name_en,
+      data.mon_from, data.mon_to,
+      data.tue_from, data.tue_to,
+      data.wed_from, data.wed_to,
+      data.thu_from, data.thu_to,
+      data.fri_from, data.fri_to,
+      data.sat_from, data.sat_to,
+      data.sun_from, data.sun_to,
+      data.company_id,
+    ]);
+  },
+  updateOne: async (data: UpdateOneCompanyBranch) => {
+    return pgp.as.format(`
+      UPDATE company_branch
+      SET district_id = $1,
+          coords      = $2,
+          mon_from    = $3,
+          mon_to      = $4,
+          tue_from    = $5,
+          tue_to      = $6,
+          wed_from    = $7,
+          wed_to      = $8,
+          thu_from    = $9,
+          thu_to      = $10,
+          fri_from    = $11,
+          fri_to      = $12,
+          sat_from    = $13,
+          sat_to      = $14,
+          sun_from    = $15,
+          sun_to      = $16,
+          name_uz     = $17,
+          name_ru     = $18,
+          name_en     = $19
+      WHERE id = $20
+      RETURNING *
+    `, [
+      data.district_id, data.coords,
+      data.mon_from, data.mon_to,
+      data.tue_from, data.tue_to,
+      data.wed_from, data.wed_to,
+      data.thu_from, data.thu_to,
+      data.fri_from, data.fri_to,
+      data.sat_from, data.sat_to,
+      data.sun_from, data.sun_to,
+      data.name_uz, data.name_ru, data.name_en,
+      data.id,
+    ]);
+  },
+  deleteOne: async (branch_id: number) => {
+    return pgp.as.format(`
+      DELETE FROM company_branch
+      WHERE id = $1::bigint
+      RETURNING id
+    `, [branch_id])
+  }
 };
 
 export default CompanyBranchModel;

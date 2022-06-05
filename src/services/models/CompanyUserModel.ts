@@ -82,6 +82,24 @@ const CompanyUserModel = {
       data.passport, data.phone_number, data.password, data.is_super,
     ]);
   },
+  getOneById: async (company_id: number) => {
+    return pgp.as.format(`
+      SELECT *
+      FROM company_user
+      WHERE id = $1
+    `, [company_id])
+  },
+  getOneByIdWithCompanyBranchInfo: async ({id, branch_id}: {id: number; branch_id: number}) => {
+    return pgp.as.format(`
+      SELECT cu.id,
+             cu.is_super,
+             cub.is_super as branch_is_super
+      FROM company_user cu
+               LEFT JOIN company_user_branches cub on cu.id = cub.company_user_id
+      WHERE cu.id = $1::int
+        AND cub.company_branch_id = $2::int
+    `, [id, branch_id])
+  }
 };
 
 export default CompanyUserModel;
